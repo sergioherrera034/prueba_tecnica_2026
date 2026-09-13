@@ -1,0 +1,99 @@
+project_name:
+  name: "Prueba técnica"
+  description: "Desarrollo de modelo de machine learning para la predicción de la probabilidad de que un cliente acepte una opción de pago"
+  version: "0.1.0"
+
+global:
+  task: "clasificacion"  # Tarea de clasificación
+  ml_backend: "pycaret"  # Backend de machine learning
+  ruta_datos: "C:/Users/seaherre/Documents/Repositorios/prueba-tecnica/src/torneo_modelos/data/base_final.csv"  # Ruta al archivo de datos
+  # ruta_datos: proceso.prutecge_base_prueba
+  prefijo: prutecge
+  seed: 2024
+  features:
+    to_remove: ['nit_enmascarado', 'num_oblig_orig_enmascarado', 'num_oblig_enmascarado', 'fecha_analisis','fecha_var_rpta_alt','tipo_var_rpta_alt','f_vinc', 'f_ult_mantenimiento','uso']
+    to_keep:
+      categorical: ['genero_cli', 'estado_civil', 'ocup', 'origen_fondos', 'canal_actualizacion', 'cli_actualizado', 'segm', 'subsegm', 'region_of', 'nombre_dpto_dirp', 'producto_pagos', 'aplicativo_pagos', 'marca_pago_pagos']
+      numerical: ['prob_propension', 'prob_alrt_temprana', 'prob_auto_cura', 'ano_nac_cli', 'edad_cli', 'total_ing', 'tot_activos', 'tot_pasivos', 'egresos_mes', 'tot_patrimonio', 'valor_cuota_mes_pagos', 'pago_total', 'porc_pago']
+    fixed:  # Variables que deben entrar obligatoriamente al modelo
+      categorical: []
+      numerical: []
+  target: "var_rpta_alt"
+  log_experiment: true
+  log_mlflow: false
+  zona_p: "proceso"
+
+  orden_ejecucion:
+    - particionar_base
+    - seleccionar_variables
+    - torneo_modelos
+
+training_steps:
+  balancear_datos:
+    balancear: False
+  particionar_base:
+    columna:
+      nombre_columna: uso_detalle
+
+  seleccionar_variables:
+    modo_seleccion: "union"
+    metodos:
+      ensamble_debil_umbral:
+        tipo_modelo: "rf"
+        parametros_modelo:
+          numTrees: 20
+          maxDepth: 6
+        umbral_importancia: 0.5
+
+  torneo_modelos:
+    activar: true
+
+    # Configuraciones opcionales de PyCaret
+    params_pycaret:
+      setup:
+        session_id: 123
+        fold: 1  # Menos folds = más rápido
+        normalize: false
+        transformation: false
+      optimize_threshold:
+          optimize: 'F1'
+
+    modelos:
+      rf:
+        n_estimators: [50,60]
+        max_depth: [5,10]
+        min_samples_split: [2]
+        min_samples_leaf: [1]
+        max_features: ['sqrt']
+
+      lightgbm:
+        n_estimators: [100, 200]
+        num_leaves: [31, 50]
+        max_depth: [5, 10]
+        learning_rate: [0.01, 0.1]
+        min_data_in_leaf: [20, 50]
+        feature_fraction: [0.8, 1.0]
+        bagging_fraction: [0.8, 1.0]
+        bagging_freq: [5]
+
+      gbc:
+        n_estimators: [100, 150, 200]
+        max_depth: [3, 5, 7]
+        learning_rate: [0.01, 0.05, 0.1]
+        subsample: [0.8, 1.0]
+        min_samples_split: [2]
+        min_samples_leaf: [1]
+        max_features: ['sqrt']
+
+      lr:
+        C: [0.01, 0.1, 1, 10]
+        max_iter: [1000]
+        solver: ['lbfgs']
+        class_weight: [null]
+
+      svm:
+        C: [0.1, 1, 10]
+        kernel: ['rbf']
+        gamma: ['scale', 'auto']
+        probability: [True]
+        max_iter: [1000]
