@@ -69,15 +69,14 @@ prueba-tecnica/
     │       └── sample_submission.csv           # Formato de salida esperado
     │
     └── torneo_modelos/
-        ├── torneo_modelos.ipynb               # Pipeline completo del torneo de modelos
-        ├── torneo_modelos_train.ipynb         # Script de entrenamiento del modelo
-        ├── config/
-        │   └── config.yaml                    # Configuración del torneo (hiperparámetros, particiones)
-        ├── data/
-        │   └── base_final.csv                 # Datos procesados y listos para modelado
-        └── resultado_prueba/
-            ├── modelo_ganador_final.pkl   # Modelo reentrenado con todos los datos
-            └── resultado_prueba.csv       # Predicciones finales con formato estándar
+    │    ├── torneo_modelos.ipynb               # Pipeline completo del torneo de modelos
+    │    ├── torneo_modelos_train.ipynb         # Script de entrenamiento del modelo
+    │    ├── config/
+    │    │   └── config.yaml                    # Configuración del torneo (hiperparámetros, particiones)
+    │    └── data/
+    │        └── base_final.csv                 # Datos procesados y listos para modelado
+    └── resultado_prueba/
+        └── resultado_prueba.csv       # Predicciones finales con formato estándar
 ```
 
 ## 🚀 Inicio Rápido
