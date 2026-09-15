@@ -1,10 +1,21 @@
-# 📊 Prueba Técnica - Modelo Predictivo de acepación de opción de pago
+# 📊 Prueba Técnica - Modelo opcion de pago y sistema agentico
 
-Modelo de Machine Learning para predecir la probabilidad de que un cliente acepete una opcion de pago en el contexto de cobranza financiera.
+Solución basada en Inteligencia Artificial compuesta por un modelo predictivo de aceptación de opciones de pago y un sistema agéntico para la gestión y acompañamiento de los procesos de cobranza.
+
+![Esquema del proyecto](/img/img1.jpg)
+
+## 🎯 Solución IA Integral
+
+**Solución basada en Inteligencia Artificial** compuesta por:
+- **Modelo Predictivo de Aceptación de Opciones de Pago**: Clasificador binario avanzado que predice la probabilidad de que un cliente acepte y cumpla con una opción de pago.
+- **Sistema Agéntico de Gestión de Cobranza**: Orquestación inteligente para la gestión y acompañamiento de procesos de cobranza en tiempo real.
 
 ## 📋 Descripción del Proyecto
 
-Este proyecto implementa un **torneo de modelos** con técnicas de optimización avanzada para desarrollar un clasificador binario que predice el cumplimiento de obligaciones de pago. El flujo incluye:
+Este proyecto implementa dos componentes estratégicos:
+
+### 1. Torneo de Modelos Predictivos
+Implementa un **torneo de modelos** con técnicas de optimización avanzada para desarrollar un clasificador binario que predice el cumplimiento de obligaciones de pago. El pipeline integrado incluye:
 
 1. **Análisis Descriptivo** → Exploración y preparación de datos
 2. **Torneo de Modelos** → Entrenamiento y comparación de 4 algoritmos (RF, LGB, GB, LR)
@@ -12,12 +23,26 @@ Este proyecto implementa un **torneo de modelos** con técnicas de optimización
 4. **Optimización de Umbral** → Ajuste de threshold para maximizar F1-Score
 5. **Reentrenamiento y Predicción** → Modelo final en datos Out-of-Time
 
+### 2. Propuesta de Sistema Agéntico
+Incluye una **propuesta integral de sistema agéntico** para la automatización y orquestación de procesos de cobranza, que integra:
+- Agentes inteligentes para la segmentación y priorización de clientes
+- Orquestación de estrategias de cobranza basadas en predicciones del modelo
+- Acompañamiento automatizado y personalizado de obligaciones de pago
+- Retroalimentación continua para mejora del modelo predictivo
+
 ## 🎯 Casos de Uso
 
-- Priorización de clientes en estrategias de cobranza
-- Segmentación por probabilidad acepacion
-- Asignación óptima de recursos de recaudo
-- Validación out-of-time de modelos en producción
+### Modelo Predictivo
+- **Priorización inteligente** de clientes en estrategias de cobranza según probabilidad de aceptación
+- **Segmentación granular** por riesgo de incumplimiento de obligaciones de pago
+- **Validación out-of-time** de modelos en producción para garantizar robustez
+- **Benchmark de modelos** para seleccionar el mejor algoritmo según métricas de desempeño
+
+### Sistema Agéntico
+- **Automatización de contactos** - Agentes seleccionan el mejor canal y timing según perfil del cliente
+- **Gestión personalizada** - Propuestas de opciones de pago adaptadas al perfil de riesgo
+- **Seguimiento automatizado** - Monitoreo continuo del cumplimiento de acuerdos de pago
+- **Análisis de efectividad** - Retroalimentación en tiempo real para mejorar estrategias
 
 ## 📁 Estructura del Proyecto
 
@@ -25,31 +50,34 @@ Este proyecto implementa un **torneo de modelos** con técnicas de optimización
 prueba-tecnica/
 ├── README.md                                    # Este archivo
 ├── pyproject.toml                              # Configuración del proyecto
-├── src/
-│   ├── descriptivo/
-│   │   ├── descriptivo.ipynb                   # Análisis exploratorio de datos
-│   │   └── data/
-│   │       ├── insumos/                        # Datos de entrada
-│   │       │   ├── prueba_op_base_pivot_*.csv
-│   │       │   ├── prueba_op_master_customer_*.csv
-│   │       │   └── prueba_op_probabilidad_*.csv
-│   │       └── sample_submission.csv           # Formato de salida esperado
-│   │
-│   └── torneo_modelos/
-│       ├── torneo_modelos.ipynb               # Pipeline completo del torneo
-│       ├── config/
-│       │   └── config.yaml                    # Configuración del torneo
-│       ├── data/
-│       │   └── base_final.csv                 # Datos procesados
-│       └── outputs/
-│           └── [timestamp]/
-│               ├── modelo_ganador_final.pkl   # Modelo reentrenado
-│               ├── optimal_threshold.json     # Umbral óptimo
-│               ├── resultados.json            # Métricas torneo
-│               ├── resultado_prueba.csv       # Predicciones finales
-│               ├── predicciones_train.csv
-│               ├── predicciones_test.csv
-│               └── *.pkl                      # Modelos intermedios
+│
+├── docs/                                        # Documentación técnica
+│   ├── Documento Prueba Técnica.docx           # Documento técnico
+│   ├── Arquitectura solucion final.jpg         # Diagrama de arquitectura del sistema
+│   └── Diagramas.pptx                          # Diagramas adicionales y flujos
+│
+├── img/                                         # Imágenes del proyecto
+│
+└── src/
+    ├── descriptivo/
+    │   ├── descriptivo.ipynb                   # Análisis exploratorio de datos (EDA)
+    │   └── data/
+    │       ├── insumos/                        # Datos de entrada crudos
+    │       │   ├── prueba_op_base_pivot_*.csv
+    │       │   ├── prueba_op_master_customer_*.csv
+    │       │   └── prueba_op_probabilidad_*.csv
+    │       └── sample_submission.csv           # Formato de salida esperado
+    │
+    └── torneo_modelos/
+        ├── torneo_modelos.ipynb               # Pipeline completo del torneo de modelos
+        ├── torneo_modelos_train.ipynb         # Script de entrenamiento del modelo
+        ├── config/
+        │   └── config.yaml                    # Configuración del torneo (hiperparámetros, particiones)
+        ├── data/
+        │   └── base_final.csv                 # Datos procesados y listos para modelado
+        └── resultado_prueba/
+            ├── modelo_ganador_final.pkl   # Modelo reentrenado con todos los datos
+            └── resultado_prueba.csv       # Predicciones finales con formato estándar
 ```
 
 ## 🚀 Inicio Rápido
@@ -162,49 +190,6 @@ Los outputs se guardan en `src/torneo_modelos/outputs/[timestamp]/`:
 | `predicciones_test.csv` | Predicciones y probabilidades en TEST |
 | `[model]_importance.csv` | Feature importance por modelo |
 
-## 🔍 Estructura de Datos
-
-### Variables de Entrada
-
-**Identificación:**
-- `nit_enmascarado` - ID cliente enmascarado
-- `num_oblig_enmascarado` - ID obligación enmascarado
-
-**Temporales:**
-- `fecha_var_rpta_alt` - Fecha de evaluación target (YYYYMM)
-- `fecha_analisis` - Fecha de análisis (derivada)
-- `uso_detalle` - Partición: train, test, val, excluido_test
-
-**Segmentación:**
-- `segmento` - Segmento de negocio
-- `producto` - Tipo de producto (Tarjeta, Crédito Consumo, etc.)
-
-### Variable Target
-
-- `var_rpta_alt` - Binaria: 1 (Cumple), 0 (Incumple)
-
-## 📝 Configuración
-
-Editar `src/torneo_modelos/config/config.yaml`:
-
-```yaml
-# Parámetros principales
-seed: 42
-cv_splits: 2
-n_iter_search: 25
-scoring_metric: 'f1'
-
-# Particiones
-particion_col: 'uso_detalle'
-target_col: 'var_rpta_alt'
-
-# Modelos a evaluar
-models:
-  - 'Random Forest'
-  - 'LightGBM'
-  - 'Gradient Boosting'
-  - 'Logistic Regression'
-```
 
 ## 📊 Métricas del Modelo
 
@@ -217,7 +202,17 @@ El modelo es evaluado con las siguientes métricas:
 - **AUC-ROC** - Curva de características operativas
 - **Matriz de Confusión** - Desglose de predicciones
 
-## 🛠️ Troubleshooting
+## � Documentación Técnica
+
+Se incluye documentación completa en la carpeta `docs/`:
+
+| Archivo | Descripción |
+|---------|-------------|
+| **Documento Prueba Técnica.docx** | Especificación técnica completa del proyecto, requisitos y criterios de evaluación |
+| **Arquitectura solucion final.jpg** | Diagrama arquitectónico del sistema IA integrado (modelo predictivo + sistema agéntico) |
+| **Diagramas.pptx** | Diagramas de flujos, casos de uso y componentes del sistema |
+
+## �🛠️ Troubleshooting
 
 ### Error: "ModuleNotFoundError"
 ```bash

@@ -121,3 +121,8 @@ reports/*.html
 
 # Informes calidad datos
 test/report/
+
+# Otros archivos
+src/descriptivo/data/insumos/
+src/torneo_modelos/data/
+src/torneo_modelos/outputs/
