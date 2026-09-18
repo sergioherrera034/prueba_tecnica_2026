@@ -1,0 +1,479 @@
+{
+  "name": "Prueba tecnica",
+  "nodes": [
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        336,
+        -272
+      ],
+      "id": "d02e6d62-af85-4cf6-909d-2471ded6b15d",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "wnqwBAJ6av7EmCAA",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "=={{ $json.cliente_id || 'sesion_prueba' }}",
+        "contextWindowLength": 10
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.4,
+      "position": [
+        480,
+        -272
+      ],
+      "id": "ae40ace5-7a9f-450e-87e7-8ea3bb30c09e",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Loop over input items and add a new field called 'myNewField' to the JSON of each one\n// Simulación de registros de la tabla 'clientes_cartera'\n// 1. Simulación de registros de clientes\nconst baseDeDatos = [\n  {\n    cliente_id: \"CLI-1001\",\n    documento: \"10101234\",\n    nombre: \"Carlos Pérez\",\n    dias_mora: 14,\n    saldo_total: 450000,\n    probabilidad_pago: 0.88,\n    acuerdo_reciente: false,\n    acuerdo_incumplido: false\n  },\n  {\n    cliente_id: \"CLI-1002\",\n    documento: \"20205678\",\n    nombre: \"Laura Gómez\",\n    dias_mora: 45,\n    saldo_total: 1200000,\n    probabilidad_pago: 0.55,\n    acuerdo_reciente: false,\n    acuerdo_incumplido: false\n  },\n  {\n    cliente_id: \"CLI-1003\",\n    documento: \"30309012\",\n    nombre: \"Marcos Ruiz\",\n    dias_mora: 60,\n    saldo_total: 890000,\n    probabilidad_pago: 0.30,\n    acuerdo_reciente: true,\n    acuerdo_incumplido: false\n  }\n];\n\n// 2. Lectura segura de la entrada del Chat Trigger\nlet inputChat = \"\";\ntry {\n  const primerItem = $input.first()?.json || {};\n  inputChat = primerItem.chatInput || primerItem.text || \"\";\n} catch (e) {\n  inputChat = \"\";\n}\n\n// 3. Búsqueda por coincidencia de documento/ID, o toma el primero por defecto\nconst clienteEncontrado = baseDeDatos.find(c => \n  inputChat && (inputChat.includes(c.documento) || inputChat.includes(c.cliente_id))\n) || baseDeDatos[0];\n\nreturn {\n  json: {\n    ...clienteEncontrado,\n    mensaje_cliente: inputChat || \"Hola, consulto por mi estado de cuenta\"\n  }\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -608,
+        -48
+      ],
+      "id": "c127ef8a-d126-435b-8093-50060675f3f9",
+      "name": "Ejemplo"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Loop over input items and add a new field called 'myNewField' to the JSON of each one\n// Procesa cada cliente que entra al nodo\nreturn items.map(item => {\n  const data = item.json;\n\n  // 1. Extracción y normalización de variables clave\n  const clienteId = data.cliente_id || `CLI-${Math.floor(1000 + Math.random() * 9000)}`;\n  const nombre = data.nombre || \"Cliente\";\n  const diasMora = Number(data.dias_mora || 0);\n  const saldoTotal = Number(data.saldo_total || 0);\n  const probabilidadPago = Number(data.probabilidad_pago || 0.5); // Escala 0 a 1\n  const tieneAcuerdoPrevioReciente = Boolean(data.acuerdo_reciente === true);\n  const incumplioAcuerdo = Boolean(data.acuerdo_incumplido === true);\n  const esReactivo = Boolean(data.origen_contacto === \"reactivo\");\n\n  // 2. Motor determinista de asignación de casos y reglas de negocio\n  let casoAsignado = \"\";\n  let objetivoGestion = \"\";\n  let ofertasAutorizadas = [];\n  let prohibidoOfrecer = [];\n  let triggersEscalamiento = [\n    \"lenguaje_ofensivo\",\n    \"intento_manipulacion_prompt\",\n    \"amenaza_legal\",\n    \"vulnerabilidad_financiera_extrema\"\n  ];\n\n  // Caso 3: No elegible / Acuerdo reciente o incumplido\n  if (tieneAcuerdoPrevioReciente || incumplioAcuerdo) {\n    casoAsignado = \"NO_ELIGIBLE_O_ACUERDO_PREVIO\";\n    objetivoGestion = \"Cobro del compromiso previo sin otorgar nuevos plazos ni descuentos.\";\n    prohibidoOfrecer = [\n      \"nuevos_descuentos\",\n      \"refinanciacion\",\n      \"ampliacion_de_plazos\",\n      \"condonacion_intereses\"\n    ];\n    triggersEscalamiento.push(\"rechazo_a_pagar_acuerdo_vigente\", \"solicitud_renegociacion\");\n\n  // Caso 1: Mora temprana con alta propensión de pago\n  } else if (diasMora <= 30 && probabilidadPago >= 0.70) {\n    casoAsignado = \"MORA_TEMPRANA_ALTA_PROBABILIDAD\";\n    objetivoGestion = \"Recordatorio cordial y confirmación de pago a corto plazo.\";\n    ofertasAutorizadas = [\n      {\n        tipo: \"PROMESA_PAGO_INMEDIATO\",\n        plazo_maximo_dias: 5,\n        descuento_capital_pct: 0,\n        condonacion_intereses: false,\n        descripcion: \"Pago total del saldo dentro de los próximos 5 días hábiles.\"\n      }\n    ];\n    prohibidoOfrecer = [\n      \"quitas_de_capital\",\n      \"planes_en_cuotas\",\n      \"condonacion_mora\"\n    ];\n    triggersEscalamiento.push(\"imposibilidad_total_de_pago\");\n\n  // Caso 2: Mora media/alta elegible para múltiples alternativas\n  } else if (diasMora > 30 && diasMora <= 90) {\n    casoAsignado = \"MULTI_ELEGIBLE_NEGOCIACION\";\n    objetivoGestion = \"Ofrecer la mejor opción según capacidad de pago, manteniendo la de menor impacto financiero como preferente.\";\n    ofertasAutorizadas = [\n      {\n        id: \"OPC_1_PREFERENTE\",\n        tipo: \"PAGO_CONTADO_CON_DESCUENTO_INTERESES\",\n        plazo_maximo_dias: 7,\n        descuento_capital_pct: 0,\n        condonacion_intereses: true,\n        descripcion: \"Pago en una sola cuota condonando el 100% de intereses moratorios.\"\n      },\n      {\n        id: \"OPC_2_SECUNDARIA\",\n        tipo: \"REESTRUCTURACION_CUOTAS\",\n        numero_cuotas: 3,\n        pago_inicial_minimo_pct: 20,\n        descuento_capital_pct: 0,\n        condonacion_intereses: false,\n        descripcion: \"Pago inicial del 20% y diferir el restante en 3 cuotas mensuales.\"\n      }\n    ];\n    prohibidoOfrecer = [\n      \"quitas_de_capital_mayores_a_cero\",\n      \"plazos_superiores_a_3_meses\"\n    ];\n    triggersEscalamiento.push(\"rechazo_de_ambas_alternativas\");\n\n  // Caso 5: Entrada reactiva no categorizada en los anteriores\n  } else if (esReactivo) {\n    casoAsignado = \"CONSULTA_REACTIVA_GENERAL\";\n    objetivoGestion = \"Informar estado de cuenta, monto exacto y escuchar propuesta del cliente sin comprometer ofertas fuera de política.\";\n    ofertasAutorizadas = [\n      {\n        tipo: \"PROMESA_PAGO_ESTANDAR\",\n        plazo_maximo_dias: 3,\n        descuento_capital_pct: 0,\n        condonacion_intereses: false,\n        descripcion: \"Acuerdo de pago formal a máximo 3 días.\"\n      }\n    ];\n    prohibidoOfrecer = [\n      \"descuentos_no_autorizados\",\n      \"acuerdos_verbales_sin_fecha\"\n    ];\n    triggersEscalamiento.push(\"solicitud_plan_especial_no_disponible\");\n\n  // Caso por defecto: Derivación / Revisión manual\n  } else {\n    casoAsignado = \"CASO_COMPLEJO_ESCALAMIENTO\";\n    objetivoGestion = \"Atender con empatía y transferir inmediatamente a un asesor especializado.\";\n    prohibidoOfrecer = [\"cualquier_tipo_de_acuerdo_o_descuento\"];\n    triggersEscalamiento.push(\"inicio_conversacion\");\n  }\n\n  // 3. Objeto unificado y blindado para el Agente LLM\n  return {\n    json: {\n      metadata: {\n        timestamp: new Date().toISOString(),\n        cliente_id: clienteId,\n        canal: esReactivo ? \"reactivo_chat\" : \"proactivo_notificacion\"\n      },\n      perfil_cliente: {\n        nombre: nombre,\n        saldo_pendiente: saldoTotal,\n        dias_en_mora: diasMora,\n        score_propension: probabilidadPago\n      },\n      directriz_gestion: {\n        caso_asignado: casoAsignado,\n        objetivo: objetivoGestion,\n        ofertas_autorizadas: ofertasAutorizadas,\n        prohibido_ofrecer: prohibidoOfrecer,\n        motivos_escalamiento_inmediato: triggersEscalamiento\n      }\n    }\n  };\n});"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -352,
+        -48
+      ],
+      "id": "a27688e4-fa73-47ee-84ac-4e9ff5649878",
+      "name": "Orquestador"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{$json.directriz_gestion.caso_asignado}}",
+                    "rightValue": "MORA_TEMPRANA_ALTA_PROBABILIDAD",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "006c7aee-c58b-428c-a390-a3f784ba345a"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "caso_1"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "8fbfb00d-36e5-4d2a-bd99-7ffe1ad73d20",
+                    "leftValue": "={{$json.directriz_gestion.caso_asignado}}",
+                    "rightValue": "MULTI_ELEGIBLE_NEGOCIACION",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "caso_2"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "a14227e1-b5a0-40b0-b4c8-43e8c4e62991",
+                    "leftValue": "={{$json.directriz_gestion.caso_asignado}}",
+                    "rightValue": "NO_ELIGIBLE_O_ACUERDO_PREVIO",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "caso_3"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        0,
+        -64
+      ],
+      "id": "e4d62aaf-fdbf-441e-bd00-922a7b6c9d7c",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=={{ $json.mensaje_cliente || 'Hola, deseo consultar mi deuda' }}",
+        "options": {
+          "systemMessage": "=Eres un asesor de encargado de recordar el pago de obligaciones a clientes en mora temprana. Vas a atender al siguiente cliente:\nCliente: {{ $json.perfil_cliente.nombre }}. Saldo: ${{ $json.perfil_cliente.saldo_pendiente }}.\nTu único objetivo es acordar una promesa de pago en un plazo máximo de 5 días hábiles.\nNo tienes autorización de condonaciones ni cuotas.\nSi el cliente acepta la fecha, ejecuta 'registrar_acuerdo'."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        464,
+        -480
+      ],
+      "id": "094621b1-89d9-441b-bafe-556e0b3ecc76",
+      "name": "Agente mora temprana"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        320,
+        160
+      ],
+      "id": "7d359238-88ee-4675-b36b-99bb9f0fa336",
+      "name": "Google Gemini Chat Model1",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "wnqwBAJ6av7EmCAA",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "=={{ $json.cliente_id || 'sesion_prueba' }}",
+        "contextWindowLength": 10
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.4,
+      "position": [
+        464,
+        160
+      ],
+      "id": "4754306a-961a-42c5-bd67-2d6239c888e5",
+      "name": "Simple Memory1"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        304,
+        624
+      ],
+      "id": "67c16092-14e9-4f18-8d86-ad57af93d579",
+      "name": "Google Gemini Chat Model2",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "wnqwBAJ6av7EmCAA",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "=={{ $json.cliente_id || 'sesion_prueba' }}",
+        "contextWindowLength": 10
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.4,
+      "position": [
+        448,
+        624
+      ],
+      "id": "f43adcd4-4f53-4ef3-a855-83bccf16ba34",
+      "name": "Simple Memory2"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=={{ $json.mensaje_cliente || 'Hola, deseo consultar mi deuda' }}",
+        "options": {
+          "systemMessage": "=Eres un asesor formal de cartera vencida. Vas a atender al siguiente cliente:\nCliente: {{ $json.perfil_cliente.nombre }}.\nEl cliente tiene un acuerdo reciente vigente o restringido. NO TIENES AUTORIZADA NINGUNA OFERTA O DESCUENTO.\nIndica amablemente que debe cumplir con el compromiso adquirido o transfiere de inmediato usando 'transferir_humano'."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        432,
+        416
+      ],
+      "id": "d75bfa1f-6b02-46ec-9310-2d818ec01c62",
+      "name": "Agente cartera vencida"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=={{ $json.mensaje_cliente || 'Hola, deseo consultar mi deuda' }}",
+        "options": {
+          "systemMessage": "=Eres un asesor de acuerdos enfocado en generar acuerdos con opciones de de pago para habilitadas para clientes. Vas a atender al siguiente cliente:\nCliente: {{ $json.perfil_cliente.nombre }}. Saldo: ${{ $json.perfil_cliente.saldo_pendiente }}.\nExplica las opciones disponibles (pago único con beneficio de intereses o diferido a 3 cuotas).\nAyuda al cliente a elegir la que mejor se acomode a su flujo de caja y ejecuta 'registrar_acuerdo'.\nSi rechaza ambas alternativas, ejecuta 'transferir_humano'."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        448,
+        -48
+      ],
+      "id": "162931e2-d8d9-43d8-a42d-8d3c48be6e4c",
+      "name": "Agente opciones"
+    },
+    {
+      "parameters": {
+        "description": "Llama a esta herramienta cuando el cliente acepte una de las opciones autorizadas.",
+        "jsCode": "// Example: convert the incoming query to uppercase and return it\nreturn {\n  estado: \"ACUERDO_REGISTRADO_EXITOSAMENTE\",\n  mensaje: \"Compromiso de pago asentado en el sistema.\"\n};"
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolCode",
+      "typeVersion": 1.3,
+      "position": [
+        672,
+        -288
+      ],
+      "id": "7caf1736-4b7f-41c6-998e-cad62f6b0af7",
+      "name": "accion_agente_1"
+    },
+    {
+      "parameters": {
+        "description": "Llama a esta herramienta cuando el cliente acepte una de las opciones autorizadas.",
+        "jsCode": "// Example: convert the incoming query to uppercase and return it\nreturn {\n  estado: \"ACUERDO_REGISTRADO_EXITOSAMENTE\",\n  mensaje: \"Compromiso de pago asentado en el sistema.\"\n};"
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolCode",
+      "typeVersion": 1.3,
+      "position": [
+        688,
+        160
+      ],
+      "id": "70d203c4-bbb8-4c6a-bebd-1934b456449a",
+      "name": "accion_agente2"
+    },
+    {
+      "parameters": {
+        "description": "Llama a esta herramienta cuando el cliente acepte una de las opciones autorizadas.",
+        "jsCode": "// Example: convert the incoming query to uppercase and return it\nreturn {\n  estado: \"ACUERDO_REGISTRADO_EXITOSAMENTE\",\n  mensaje: \"Compromiso de pago asentado en el sistema.\"\n};"
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolCode",
+      "typeVersion": 1.3,
+      "position": [
+        688,
+        608
+      ],
+      "id": "57b7a695-f022-4395-a153-82843f8b51a6",
+      "name": "accion_agente3"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Agente mora temprana",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "Agente mora temprana",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ejemplo": {
+      "main": [
+        [
+          {
+            "node": "Orquestador",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Orquestador": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Agente opciones",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory1": {
+      "ai_memory": [
+        [
+          {
+            "node": "Agente opciones",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model2": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Agente cartera vencida",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory2": {
+      "ai_memory": [
+        [
+          {
+            "node": "Agente cartera vencida",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "Agente mora temprana",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Agente opciones",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Agente cartera vencida",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "accion_agente_1": {
+      "ai_tool": [
+        [
+          {
+            "node": "Agente mora temprana",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "accion_agente2": {
+      "ai_tool": [
+        [
+          {
+            "node": "Agente opciones",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "accion_agente3": {
+      "ai_tool": [
+        [
+          {
+            "node": "Agente cartera vencida",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "000feae2-08ca-4479-9ea7-b03461492b59",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "77a49ceb005b1e7a3d4b8a622f5f31f6a35868660ea97933b8dc47fd995a2b62"
+  },
+  "nodeGroups": [],
+  "id": "KH827fU61xSib02q",
+  "tags": []
+}

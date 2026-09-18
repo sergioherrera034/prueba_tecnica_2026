@@ -48,10 +48,10 @@ Incluye una **propuesta integral de sistema agéntico** para la automatización 
 
 ```
 prueba-tecnica/
-├── README.md                                    # Este archivo
+├── README.md                                   # README del repositorio
 ├── pyproject.toml                              # Configuración del proyecto
 │
-├── docs/                                        # Documentación técnica
+├── docs/                                       # Documentación técnica
 │   ├── Documento Prueba Técnica.docx           # Documento técnico
 │   ├── Arquitectura solucion final.jpg         # Diagrama de arquitectura del sistema
 │   └── Diagramas.pptx                          # Diagramas adicionales y flujos
@@ -76,7 +76,11 @@ prueba-tecnica/
     │    └── data/
     │        └── base_final.csv                 # Datos procesados y listos para modelado
     └── resultado_prueba/
-        └── resultado_prueba.csv       # Predicciones finales con formato estándar
+    |    └── resultado_prueba.csv               # Predicciones finales con formato estándar
+    |
+    |
+    └── workflow n8n/
+        └── Prototipo.json                     # Prototipo sistema agentico en n8n
 ```
 
 ## 🚀 Inicio Rápido
